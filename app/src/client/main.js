@@ -15,7 +15,8 @@ class App extends Component {
 	constructor(props) {
 		super(props)
 		this.state = {
-      emotionData: []
+      emotionData: [],
+      message: 'Loading sentiments...'
 		}
 		this.handleEmotionData = this.handleEmotionData.bind(this)
 		this.handleAuth = this.handleAuth.bind(this)
@@ -24,13 +25,10 @@ class App extends Component {
 		// console.log(data)
 		this.setState({emotionData: [...this.state.emotionData, data]})
 	}
-  handleAuth() {
-    console.log("Hi");
-  }
 	render() {
 		return (
 			<div>
-        <button className="btn btn-primary" onClick={this.handleAuth}>Authorise</button>
+        {this.state.message}
 			</div>
 		);
 	}
