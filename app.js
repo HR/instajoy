@@ -24,25 +24,20 @@ app.engine('html', require('ejs')
 	.renderFile);
 app.set('view engine', 'html');
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded(
-{
+app.use(bodyParser.urlencoded({
 	extended: false
 }))
 app.use(cookieParser())
 app.use('/assets', express.static(`${BASE_PATH}/public`))
 
-if (ENV === 'development')
-{
+if (ENV === 'development') {
 	console.log('DEVELOPMENT env')
-	app.use(errorHandler(
-	{
+	app.use(errorHandler({
 		dumpExceptions: true,
 		showStack: true
 	}))
 	app.use(logger('dev'))
-}
-else
-{
+} else {
 	console.log('PRODUCTION env')
 	app.use(errorHandler())
 	app.use(logger())
@@ -51,8 +46,7 @@ else
 
 app.locals = {
 	userAccessToken: process.env.TEST_ACCESS_TOKEN,
-	accEmotions:
-	{
+	accEmotions: {
 		anger: 0,
 		contempt: 0,
 		disgust: 0,
@@ -84,12 +78,10 @@ server.listen(PORT)
 /**
  * Server event handling
  */
-server.on('error', (err) =>
-{
+server.on('error', (err) => {
 	throw err
 })
-server.on('listening', (err) =>
-{
+server.on('listening', (err) => {
 	let addr = server.address()
 	let bind = typeof addr === 'string' ?
 		'pipe ' + addr :
@@ -105,34 +97,27 @@ io.listen(SOCKET_PORT);
 console.log('Server alive on http://localhost:' + PORT);
 console.log('Listening on SOCKET_PORT ', SOCKET_PORT);
 
-io.on('connection', (client) =>
-{
-	client.on('imagePost', (imgData) =>
-	{
+io.on('connection', (client) => {
+	client.on('imagePost', (imgData) => {
 		// console.log('timestamp:', imgData.timestamp)
 
-		axios(
-			{
+		axios({
 				method: 'post',
 				url: consts.endpoints.faceAPI,
 				data: imgData.uri,
-				headers:
-				{
+				headers: {
 					'Content-Type': 'application/octet-stream',
 					'Ocp-Apim-Subscription-Key': process.env.SUB_KEY
 				},
-				params:
-				{
+				params: {
 					'returnFaceId': 'true',
 					'returnFaceLandmarks': 'false',
-					'returnFaceAttributes': 'headPose,emotion,blur,exposure,noise',
+					'returnFaceAttributes': 'emotion',
 				},
 			})
-			.then(function (response)
-			{
+			.then(function (response) {
 				let faceData = response.data
-				if (faceData.length <= 0)
-				{
+				if (faceData.length <= 0) {
 					// console.log(faceData.length)
 					return;
 				}
@@ -168,34 +153,28 @@ io.on('connection', (client) =>
 				}
 				let max = 0
 
-				function avg(count, x1, x2)
-				{
+				function avg(count, x1, x2) {
 					return ((count - 1) * x1 + x2) / 2
 				}
 
-				attentiveFaces.forEach(elem =>
-				{
-					for (let prop in elem['faceAttributes']['emotion'])
-					{
+				attentiveFaces.forEach(elem => {
+					for (let prop in elem['faceAttributes']['emotion']) {
 						app.locals.accEmotions[prop] = avg(app.locals.lecturer.lecture.count, app.locals.accEmotions[prop], elem['faceAttributes']['emotion'][prop])
 						// console.log(prop)
 						sum[prop] = sum[prop] + elem['faceAttributes']['emotion'][prop]
-						if (elem['faceAttributes']['emotion'][prop] > max)
-						{
+						if (elem['faceAttributes']['emotion'][prop] > max) {
 							max = elem['faceAttributes']['emotion'][prop]
 							maximumEmotion = maxEmotionMapping[prop]
 						}
 					}
 				});
 				console.log(require('util')
-					.inspect(plotData,
-					{
+					.inspect(plotData, {
 						depth: null
 					}));
 
 
-				if (--app.locals.lecturer.lecture.accFrames < 0)
-				{
+				if (--app.locals.lecturer.lecture.accFrames < 0) {
 					let plotData = {
 						emotion: maximumEmotion,
 						timestamp: imgData.timestamp
@@ -215,8 +194,7 @@ io.on('connection', (client) =>
 				}
 
 			})
-			.catch(function (error)
-			{
+			.catch(function (error) {
 				// console.error(error);
 			});
 	});
@@ -225,25 +203,19 @@ io.on('connection', (client) =>
 
 // const websocket = socketio(server)
 
-app.get('/', function (req, res)
-{
-	if (app.locals.userAccessToken)
-	{
+app.get('/', function (req, res) {
+	if (app.locals.userAccessToken) {
+		getImages()
 		res.render('index')
-	}
-	else
-	{
-		res.render('noauth.ejs',
-		{
+	} else {
+		res.render('noauth.ejs', {
 			clientId: process.env.CLIENT_ID
 		})
 	}
 })
 
-app.get('/auth', function (req, res)
-{
-	if (req.query.code)
-	{
+app.get('/auth', function (req, res) {
+	if (req.query.code) {
 		console.log("Authorization code is: " + req.query.code);
 		var formData = {
 			'client_id': process.env.CLIENT_ID,
@@ -252,14 +224,11 @@ app.get('/auth', function (req, res)
 			'redirect_uri': 'http://localhost:3001/auth',
 			'code': req.query.code
 		}
-		request.post(
-		{
+		request.post({
 			url: 'https://api.instagram.com/oauth/access_token',
 			formData: formData
-		}, function (err, httpResponse, body)
-		{
-			if (err)
-			{
+		}, function (err, httpResponse, body) {
+			if (err) {
 				return console.error('Failed to get user access token', err);
 			}
 			var parsedBody = JSON.parse(body);
@@ -269,18 +238,24 @@ app.get('/auth', function (req, res)
 			// start processing user images
 			getImages()
 		});
-	}
-	else
-	{
+	} else {
 		// error
 	}
-	res.render('index')
+
+	res.redirect('/');
 })
 
-function getImages()
-{
-	let count = 1000000000000000000000000000;
-
+function getImages() {
+	let count = 100000000000;
+	request.get(consts.endpoints.instagramMedia + app.locals.userAccessToken + '&count=' + count, function (err, httpResponse, body) {
+		if (err) {
+			return console.error('Failed to get data', err);
+		}
+    let parsedBody = JSON.parse(body);
+    let data = parsedBody["data"]
+    let imageData =  data.filter(img => img.type === "image").map(img => img["images"]["standard_resolution"]["url"]);
+    console.log(imageData);
+	})
 }
 
 module.exports = app
