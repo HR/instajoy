@@ -50,7 +50,7 @@ else
 
 
 app.locals = {
-	userAccessToken: undefined,
+	userAccessToken: process.env.TEST_ACCESS_TOKEN,
 	accEmotions:
 	{
 		anger: 0,
@@ -102,6 +102,7 @@ server.on('listening', (err) =>
  */
 const io = socketio(server);
 io.listen(SOCKET_PORT);
+console.log('Server alive on http://localhost:' + PORT);
 console.log('Listening on SOCKET_PORT ', SOCKET_PORT);
 
 io.on('connection', (client) =>
@@ -261,19 +262,25 @@ app.get('/auth', function (req, res)
 			{
 				return console.error('Failed to get user access token', err);
 			}
-      var parsedBody = JSON.parse(body);
+			var parsedBody = JSON.parse(body);
 
-      app.locals.userAccessToken = parsedBody["access_token"];
+			app.locals.userAccessToken = parsedBody["access_token"];
 			console.log('Got user access token:', app.locals.userAccessToken);
-      // start processing user images
-      res.render('index');
+			// start processing user images
+			getImages()
 		});
 	}
 	else
 	{
 		// error
 	}
-	// res.render('index')
+	res.render('index')
 })
+
+function getImages()
+{
+	let count = 1000000000000000000000000000;
+
+}
 
 module.exports = app
