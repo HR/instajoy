@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import VideoExample from './video';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import AreaChart from './chart'
 
@@ -28,10 +27,10 @@ class App extends Component {
 		const style = {
 		  margin: 12,
 		};
+    return null
 		return (
 			<div>
-				<VideoExample onDataPush={this.handleEmotionData}/>
-				<Chart eData={this.state.emotionData} />
+				// <Chart eData={this.state.emotionData} />
 			</div>
 		);
 	}
@@ -41,8 +40,3 @@ ReactDOM.render(
 	<App />,
 	document.getElementById('entry')
 );
-
-// ReactDOM.render(
-// 	<Chart />,
-// 	document.getElementById('well')
-// );

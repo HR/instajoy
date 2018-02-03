@@ -7,11 +7,11 @@ function AChart(props) {
     return {x: i, y: el.emotion}
   })
   console.log(dataObject)
+  return null
   return(
     <div>
-      <p>Hello:</p>
       <AreaChart
-        // xType={'time'}
+        xType={'time'}
         width={700}
         height={250}
         interpolate={'cardinal'}
