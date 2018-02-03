@@ -18,19 +18,19 @@ class App extends Component {
       emotionData: []
 		}
 		this.handleEmotionData = this.handleEmotionData.bind(this)
+		this.handleAuth = this.handleAuth.bind(this)
 	}
 	handleEmotionData(data) {
 		// console.log(data)
 		this.setState({emotionData: [...this.state.emotionData, data]})
 	}
+  handleAuth() {
+    console.log("Hi");
+  }
 	render() {
-		const style = {
-		  margin: 12,
-		};
-    return null
 		return (
 			<div>
-				// <Chart eData={this.state.emotionData} />
+        <button className="btn btn-primary" onClick={this.handleAuth}>Authorise</button>
 			</div>
 		);
 	}
