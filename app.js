@@ -261,8 +261,9 @@ app.get('/auth', function (req, res)
 			{
 				return console.error('Failed to get user access token', err);
 			}
+      var parsedBody = JSON.parse(body);
 
-      app.locals.userAccessToken = body["access_token"];
+      app.locals.userAccessToken = parsedBody["access_token"];
 			console.log('Got user access token:', app.locals.userAccessToken);
       // start processing user images
       res.render('index');
