@@ -32,6 +32,7 @@
     "react-icons": "^2.2.7",
     "react-multimedia-capture": "^1.1.0",
     "request": "^2.83.0",
+    "request-promise-native": "^1.0.5",
     "serve-favicon": "^2.4.5",
     "serve-static": "^1.13.1",
     "socket.io": "^2.0.4"

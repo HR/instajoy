@@ -10,13 +10,12 @@ const express = require('express'),
 	utils = require('./app/src/utils'),
 	consts = require('./consts'),
 	axios = require('axios'),
+	req = require('request-promise-native'),
 	request = require('request'),
 	FormData = require('form-data'),
 	BASE_PATH = `${__dirname}/app`,
 	ENV = process.env.NODE_ENV || 'development',
-	DEFAULT_PORT = 3001,
-	SOCKET_PORT = 8000,
-	EMOTION_FPS = 5; // return the analysed data after n frames
+	DEFAULT_PORT = 3001;
 
 /* Configuration */
 app.set('views', `${BASE_PATH}/views`)
@@ -89,119 +88,17 @@ server.on('listening', (err) => {
 	debug('InstaJoy is alive on ' + bind)
 })
 
-/**
- * Init websockets
- */
-const io = socketio(server);
-io.listen(SOCKET_PORT);
 console.log('Server alive on http://localhost:' + PORT);
-console.log('Listening on SOCKET_PORT ', SOCKET_PORT);
 
-io.on('connection', (client) => {
-	client.on('imagePost', (imgData) => {
-		// console.log('timestamp:', imgData.timestamp)
-
-		axios({
-				method: 'post',
-				url: consts.endpoints.faceAPI,
-				data: imgData.uri,
-				headers: {
-					'Content-Type': 'application/octet-stream',
-					'Ocp-Apim-Subscription-Key': process.env.SUB_KEY
-				},
-				params: {
-					'returnFaceId': 'true',
-					'returnFaceLandmarks': 'false',
-					'returnFaceAttributes': 'emotion',
-				},
-			})
-			.then(function (response) {
-				let faceData = response.data
-				if (faceData.length <= 0) {
-					// console.log(faceData.length)
-					return;
-				}
-				// Only include attentive faces
-				// let attentiveFaces = faceData.filter((item) => {
-				//   return parseInt(item['headPose']['pitch']) == 0;
-				// });
-				let attentiveFaces = faceData
-				app.locals.lecturer.lecture.count++;
-
-				// console.log(attentiveFaces)
-				// console.log(app.locals.lecturer.lecture.count)
-				let maxEmotionMapping = {
-					anger: 1,
-					sadness: 2,
-					disgust: 3,
-					fear: 4,
-					neutral: 5,
-					contempt: 6,
-					surprise: 7,
-					happiness: 8,
-				}
-				let maximumEmotion = 0
-				let sum = {
-					anger: 0,
-					contempt: 0,
-					disgust: 0,
-					fear: 0,
-					happiness: 0,
-					neutral: 0,
-					sadness: 0,
-					surprise: 0,
-				}
-				let max = 0
-
-				function avg(count, x1, x2) {
-					return ((count - 1) * x1 + x2) / 2
-				}
-
-				attentiveFaces.forEach(elem => {
-					for (let prop in elem['faceAttributes']['emotion']) {
-						app.locals.accEmotions[prop] = avg(app.locals.lecturer.lecture.count, app.locals.accEmotions[prop], elem['faceAttributes']['emotion'][prop])
-						// console.log(prop)
-						sum[prop] = sum[prop] + elem['faceAttributes']['emotion'][prop]
-						if (elem['faceAttributes']['emotion'][prop] > max) {
-							max = elem['faceAttributes']['emotion'][prop]
-							maximumEmotion = maxEmotionMapping[prop]
-						}
-					}
-				});
-				console.log(require('util')
-					.inspect(plotData, {
-						depth: null
-					}));
-
-
-				if (--app.locals.lecturer.lecture.accFrames < 0) {
-					let plotData = {
-						emotion: maximumEmotion,
-						timestamp: imgData.timestamp
-					}
-
-					app.locals.lecturer.lecture.timeline.append(plotData)
-					app.locals.lecturer.lecture.avgcount++;
-					app.locals.lecturer.lecture.emotion = app.locals.lecturer.overall.emotion = avg(app.locals.lecturer.lecture.avgcount, app.locals.lecturer.lecture.emotion, maximumEmotion)
-
-
-
-					// Reset the accumlated frames
-					app.locals.lecturer.lecture.accFrames = EMOTION_FPS
-
-					// send back off to client
-					client.emit('results', plotData)
-				}
-
-			})
-			.catch(function (error) {
-				// console.error(error);
-			});
-	});
-});
-
-
-// const websocket = socketio(server)
+// axios.interceptors.request.use(request => {
+//   console.log('Starting Request', request)
+//   return request
+// })
+//
+// axios.interceptors.response.use(response => {
+//   console.log('Response:', response)
+//   return response
+// })
 
 app.get('/', function (req, res) {
 	if (app.locals.userAccessToken) {
@@ -251,11 +148,79 @@ function getImages() {
 		if (err) {
 			return console.error('Failed to get data', err);
 		}
-    let parsedBody = JSON.parse(body);
-    let data = parsedBody["data"]
-    let imageData =  data.filter(img => img.type === "image").map(img => img["images"]["standard_resolution"]["url"]);
-    console.log(imageData);
+		let parsedBody = JSON.parse(body);
+		let data = parsedBody["data"];
+		let imageData = data.filter(img => img.type === "image")
+			.map(img => img["images"]["standard_resolution"]["url"]);
+		console.log(imageData);
+		getImagesSentiments(imageData);
 	})
+}
+
+async function getImagesSentiments(images) {
+  let res = [];
+	try {
+		let imgSents = await axios({
+			method: 'post',
+			url: consts.endpoints.faceAPI,
+			data: '{"url": ' + '"' + images[2] + '"}',
+			headers: {
+				'Content-Type': 'application/json',
+				'Ocp-Apim-Subscription-Key': process.env.SUB_KEY
+			},
+			params: {
+				'returnFaceId': 'true',
+				'returnFaceLandmarks': 'false',
+				'returnFaceAttributes': 'emotion'
+			},
+		})
+
+		let faceData = imgSents.data
+		if (faceData.length <= 0) {
+			console.log("No faces detected")
+			return;
+		}
+
+    console.log(JSON.stringify(faceData));
+
+    let modeEmotions = faceData.map(face => Object.keys(face['faceAttributes']['emotion']).reduce((a, b) => face['faceAttributes']['emotion'][a] > face['faceAttributes']['emotion'][b] ? a : b));
+    let modeEmotion = mode(maxEmotions);
+
+	} catch (err) {
+		console.error(err);
+	}
+
+
+
+	// const imgps = images.map(async (imgUrl) => {
+	//   let imgBin = await req(imgUrl);
+	//   let imgB64 = new Buffer(imgBin).toString('base64');
+	//   console.log(imgB64.substring(0,50));
+	//   return imgB64;
+	// })
+
+	// let s = await imgps[0];
+	// request.get()
+}
+
+function mode(array) {
+	if (array.length == 0)
+		return null;
+	var modeMap = {};
+	var maxEl = array[0],
+		maxCount = 1;
+	for (var i = 0; i < array.length; i++) {
+		var el = array[i];
+		if (modeMap[el] == null)
+			modeMap[el] = 1;
+		else
+			modeMap[el]++;
+		if (modeMap[el] > maxCount) {
+			maxEl = el;
+			maxCount = modeMap[el];
+		}
+	}
+	return maxEl;
 }
 
 module.exports = app
