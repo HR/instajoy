@@ -157,11 +157,7 @@ function getImages() {
 		let parsedBody = JSON.parse(body);
 		let data = parsedBody["data"];
 		let images = data.filter(img => img.type === "image");
-		let imageData = images.map(img => img["images"]["standard_resolution"]["url"]);
-		let timeData = images.map(img => img["created_time"]);
-		console.log('imageData:', imageData);
-		console.log('timeData:', timeData);
-		getData(imageData, timeData)
+		getData(images)
 			.then((res) => {
 				console.log('Got Data:', JSON.stringify(res));
         app.locals.data = res;
@@ -170,14 +166,20 @@ function getImages() {
 	})
 }
 
-async function getData(images, times) {
+async function getData(imgs) {
+  let images = imgs.map(img => img["images"]["standard_resolution"]["url"]);
+  let thumbs = imgs.map(img => img["images"]["thumbnail"]["url"]);
+  let times = imgs.map(img => img["created_time"]);
 	let res = [];
+  console.log('images:', images);
+  console.log('times:', times);
 	for (let i = 0; i < images.length; i++) {
 		let imageSentiments = await getImageSentiments(images[i]);
 		if (imageSentiments) {
 			res.push({
 				emotion: imageSentiments,
-				time: times[i]
+				time: times[i],
+        thumb: thumbs[i]
 			});
 		}
 	}
