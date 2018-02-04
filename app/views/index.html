@@ -88,126 +88,139 @@
                 var $this = $(this);
                 $this.button('loading');
 
-                $.ajax({
-                    type: 'GET',
-                    dataType: 'json',
-                    url: '/data',
-                    timeout: 5000,
-                    success: function(data, textStatus ){
-                        data = data.sort(function (a, b) {
-                            let at = parseInt(a.time);
-                            let bt = parseInt(b.time);
-                            if (bt > at) {
-                                return -1;
-                            } else if (bt === at) {
-                                return 0;
-                            } else {
-                                return 1;
-                            };
-                        });
-                        var len = data.length;
-                        var emotion = [];
-                        var time = [];
-                        for(var i=0;i<len;i++){
-                            emotion[i] = emotions[data[i].emotion];
-                            score = (emotion[i] === 7) ? score+happinessReward : score;
-                            // time[i] = new Date(data[i].time * 1000);
-                            // time[i] = moment(parseInt(data[i].time)).startOf('day').fromNow();
-                            time[i] = moment(new Date(data[i].time * 1000)).calendar();
-                            // time[i] = time[i].toLocaleString();
-                        }
-                        $this.attr("disabled", "true");
-                        var ctx = document.getElementById('myChart').getContext('2d');
-                        var chart = new Chart(ctx, {
-                            // The type of chart we want to create
-                            type: 'line',
-
-                            // The data for our dataset
-                            data: {
-                                labels: time,
-                                datasets: [{
-                                    label: "Ups and Downs in your Life",
-                                    backgroundColor: '#4868AD',
-                                    borderColor: '#0e1f56',
-                                    borderWidth:2,
-                                    data: emotion,
-                                }]
-                            },
-
-
-                            // Configuration options go here
-                            options: {
-                                layout: {
-                                    padding: {
-                                        left: 0,
-                                        right: 0,
-                                        top: 20,
-                                        bottom: 20
-                                    }
-                                },
-
-                                title: {
-                                    display: true,
-                                    text: 'Your life\'s roallercoster'
-                                },
-                                scales: {
-                                    xAxes: [{
-                                        gridLines: {
-                                            display: false,
-                                            color: "black"
-                                        },
-                                        scaleLabel: {
-                                            display: true,
-                                            labelString: "Timeline"
-                                        }
-                                    }],
-                                    yAxes: [{
-                                        ticks: {
-                                            fontSize: 25,
-                                            // Include a dollar sign in the ticks
-                                            callback: function(value, index, values) {
-                                                return emoji[value];
-                                            }
-                                        },
-                                        gridLines: {
-                                            display: false,
-                                            color: "black"
-                                        },
-                                        scaleLabel: {
-                                            display: true,
-                                            labelString: "Emotions"
-                                        }
-                                    }]
-                                }
+                var myvar = setInterval(httprequest, 1000);
+                function httprequest(){
+                    $.ajax({
+                        type: 'GET',
+                        dataType: 'json',
+                        url: '/data',
+                        timeout: 5000,
+                        success: function(data, textStatus ){
+                            clearInterval(myvar);
+                            data = data.sort(function (a, b) {
+                                let at = parseInt(a.time);
+                                let bt = parseInt(b.time);
+                                if (bt > at) {
+                                    return -1;
+                                } else if (bt === at) {
+                                    return 0;
+                                } else {
+                                    return 1;
+                                };
+                            });
+                            var len = data.length;
+                            var emotion = [];
+                            var time = [];
+                            for(var i=0;i<len;i++){
+                                emotion[i] = emotions[data[i].emotion];
+                                score = (emotion[i] === 7) ? score+happinessReward : score;
+                                // time[i] = new Date(data[i].time * 1000);
+                                // time[i] = moment(parseInt(data[i].time)).startOf('day').fromNow();
+                                time[i] = moment(new Date(data[i].time * 1000)).calendar();
+                                // time[i] = time[i].toLocaleString();
                             }
-                        });
+                            $this.attr("disabled", "true");
+                            var ctx = document.getElementById('myChart').getContext('2d');
+                            var chart = new Chart(ctx, {
+                                // The type of chart we want to create
+                                type: 'line',
 
-                        document.getElementById("loadingBtn").style.visibility = 'hidden';
-                        var sc = $("#score");
-                        sc.find('.score').text(score);
-                        if(score < 20) {
-                            sc.find('.scoreMessage').text('We are all sad about Harambe\'s death but life goes on so laugh more. Remember, a laugh a day keeps the doctor away!');
+                                // The data for our dataset
+                                data: {
+                                    labels: time,
+                                    datasets: [{
+                                        label: "Ups and Downs in your Life",
+                                        backgroundColor: '#4868AD',
+                                        borderColor: '#0e1f56',
+                                        borderWidth:2,
+                                        data: emotion,
+                                    }]
+                                },
+
+
+                                // Configuration options go here
+                                options: {
+                                    layout: {
+                                        padding: {
+                                            left: 0,
+                                            right: 0,
+                                            top: 20,
+                                            bottom: 20
+                                        }
+                                    },
+
+                                    title: {
+                                        display: true,
+                                        text: 'Your life\'s roallercoster'
+                                    },
+                                    scales: {
+                                        xAxes: [{
+                                            gridLines: {
+                                                display: false,
+                                                color: "black"
+                                            },
+                                            scaleLabel: {
+                                                display: true,
+                                                labelString: "Timeline"
+                                            }
+                                        }],
+                                        yAxes: [{
+                                            ticks: {
+                                                fontSize: 25,
+                                                // Include a dollar sign in the ticks
+                                                callback: function(value, index, values) {
+                                                    return emoji[value];
+                                                }
+                                            },
+                                            gridLines: {
+                                                display: false,
+                                                color: "black"
+                                            },
+                                            scaleLabel: {
+                                                display: true,
+                                                labelString: "Emotions"
+                                            }
+                                        }]
+                                    }
+                                }
+                            });
+
+                            document.getElementById("loadingBtn").style.visibility = 'hidden';
+                            var sc = $("#score");
+                            sc.find('.score').text(score);
+                            if(score < 20) {
+                                sc.find('.scoreMessage').text('We are all sad about Harambe\'s death but life goes on so laugh more. Remember, a laugh a day keeps the doctor away!');
+                            }
+                            else if(score < 40){
+                                sc.find('.scoreMessage').text('You can do better. Laugh a bit more. Even the gods love to laugh — Plato');
+                            }
+                            else if(score < 100){
+                                sc.find('.scoreMessage').text('Good work! Keep it up. He who laughs, lasts! — Mary Pettibone Poole');
+                            }
+                            else if(score < 150){
+                                sc.find('.scoreMessage').text('The last thing you need to do is laughing.');
+                            }
+                            else{
+                                sc.find('.scoreMessage').text('Wow! Can you teach me how to laugh everyday?');
+                            }
+                            sc.show();
+                        },
+
+                        error: function(xhr, textStatus, errorThrown){
+                            console.log(xhr.status);
                         }
-                        else if(score < 40){
-                            sc.find('.scoreMessage').text('You can do better. Laugh a bit more. Even the gods love to laugh — Plato');
-                        }
-                        else if(score < 100){
-                            sc.find('.scoreMessage').text('Good work! Keep it up. He who laughs, lasts! — Mary Pettibone Poole');
-                        }
-                        else if(score < 150){
-                            sc.find('.scoreMessage').text('The last thing you need to do is laughing.');
-                        }
-                        else{
-                            sc.find('.scoreMessage').text('Wow! Can you teach me how to laugh everyday?');
-                        }
-                        sc.show();
-                    },
-                    error: function(xhr, textStatus, errorThrown){
-                    }
-                });
+
+
+                    });
+
+                };
+
 
             });
-        });
+
+                }
+
+        );
 
 
     </script>

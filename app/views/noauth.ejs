@@ -17,7 +17,7 @@
     <div class="container" style="padding-top:70px;">
       <div class="row">
         <div class="col-md-12 text-center">
-          <button class="btn btn-primary btn-md " onclick="window.location.replace('https://api.instagram.com/oauth/authorize/?client_id=<%= clientId %>&redirect_uri=http://localhost:3001/auth&response_type=code')" style="text-align:center;margin:auto;" >Authorise</button>
+          <button class="btn btn-primary btn-md " id="authorizeBtn" onclick="window.location.replace('https://api.instagram.com/oauth/authorize/?client_id=<%= clientId %>&redirect_uri=http://localhost:3001/auth&response_type=code')" style="text-align:center;margin:auto;" >Authorise</button>
         </div>
       </div>
     </div>
