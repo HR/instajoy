@@ -45,7 +45,8 @@ if (ENV === 'development') {
 
 app.locals = {
 	userAccessToken: process.env.TEST_ACCESS_TOKEN,
-  data: null
+  data: null,
+  fetching: false
 }
 
 /**
@@ -93,7 +94,7 @@ console.log('Server alive on http://localhost:' + PORT);
 
 app.get('/', function (req, res) {
 	if (app.locals.userAccessToken) {
-    if (!app.locals.data) {
+    if (!app.locals.data && !app.locals.fetching) {
       getImages()
     }
     console.log('app.locals.data:', app.locals.data);
@@ -134,17 +135,20 @@ app.get('/auth', function (req, res) {
 
 			app.locals.userAccessToken = parsedBody["access_token"];
 			console.log('Got user access token:', app.locals.userAccessToken);
+      // redirect
+      res.redirect('/');
 			// start processing user images
-			getImages()
+			getImages();
 		});
 	} else {
 		// error
+    res.redirect('/');
 	}
 
-	res.redirect('/');
 })
 
 function getImages() {
+  app.locals.fetching = true;
 	let count = 100000000000;
 	request.get(consts.endpoints.instagramMedia + app.locals.userAccessToken + '&count=' + count, function (err, httpResponse, body) {
 		if (err) {
@@ -153,26 +157,29 @@ function getImages() {
 		let parsedBody = JSON.parse(body);
 		let data = parsedBody["data"];
 		let images = data.filter(img => img.type === "image");
-		let imageData = images.map(img => img["images"]["standard_resolution"]["url"]);
-		let timeData = images.map(img => img["created_time"]);
-		console.log('imageData:', imageData);
-		console.log('timeData:', timeData);
-		getData(imageData, timeData)
+		getData(images)
 			.then((res) => {
 				console.log('Got Data:', JSON.stringify(res));
         app.locals.data = res;
+        app.locals.fetching = false;
 			})
 	})
 }
 
-async function getData(images, times) {
+async function getData(imgs) {
+  let images = imgs.map(img => img["images"]["standard_resolution"]["url"]);
+  let thumbs = imgs.map(img => img["images"]["thumbnail"]["url"]);
+  let times = imgs.map(img => img["created_time"]);
 	let res = [];
+  console.log('images:', images);
+  console.log('times:', times);
 	for (let i = 0; i < images.length; i++) {
 		let imageSentiments = await getImageSentiments(images[i]);
 		if (imageSentiments) {
 			res.push({
 				emotion: imageSentiments,
-				time: times[i]
+				time: times[i],
+        thumb: thumbs[i]
 			});
 		}
 	}
