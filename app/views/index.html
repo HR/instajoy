@@ -47,15 +47,58 @@
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 	<link rel="stylesheet" href="/assets/main.css">
     <script>
+
       $('#loadingBtn').on('click', function() {
 
           var $this = $(this);
           $this.button('loading');
-          setInterval(function() {
+          setTimeout(function() {
               $.get("./data",function(data, status) {
+                  var len = data.length;
+                  var emotion = [];
+                  var time = [];
+                  for(var i=0;i<len;i++){
+                      emotion[i] = data[i].emotion;
+                      time[i] = new Date(data[i].time * 1000);
+                      time[i] = time[i].toLocaleString();
+                  }
                   $this.attr("disabled", "true");
-                  // $("#show").append("<li id='score'>You happy score is：" + data.score + "</li>");
                   if(status == "success"){
+                      var ctx = document.getElementById('myChart').getContext('2d');
+                      var chart = new Chart(ctx, {
+                          // The type of chart we want to create
+                          type: 'line',
+
+                          // The data for our dataset
+                          data: {
+                              labels: time.sort(),
+                              datasets: [{
+                                  label: "Ups and Downs in your Life",
+                                  backgroundColor: 'rgb(255, 99, 132)',
+                                  borderColor: 'rgb(255, 30, 30)',
+                                  data: [0, 10, 5, 2, 20, 30, 45],
+                              }]
+                          },
+
+                          // Configuration options go here
+                          options: { title: {
+                                  display: true,
+                                  text: 'Smile more',
+
+                                  scales: {
+                                      yAxes: [{
+                                          ticks: {
+                                              // Include a dollar sign in the ticks
+                                              callback: function(value, index, values) {
+                                                  return '$' + value;
+                                              }
+                                          }
+                                      }]
+                                  },
+
+                              }
+                          }
+                      });
 
                       document.getElementById("loadingBtn").style.visibility = 'hidden';
                   }
@@ -63,41 +106,7 @@
               }, "json");
 
           }, 2000);
-          var ctx = document.getElementById('myChart').getContext('2d');
-          var chart = new Chart(ctx, {
-              // The type of chart we want to create
-              type: 'line',
 
-              // The data for our dataset
-              data: {
-                  labels: ["January", "February", "March", "April", "May", "June", "July"],
-                  datasets: [{
-                      label: "Ups and Downs in your Life",
-                      backgroundColor: 'rgb(255, 99, 132)',
-                      borderColor: 'rgb(255, 30, 30)',
-                      data: [0, 10, 5, 2, 20, 30, 45],
-                  }]
-              },
-
-              // Configuration options go here
-              options: { title: {
-                      display: true,
-                      text: 'Smile more',
-
-                      scales: {
-                          yAxes: [{
-                              ticks: {
-                                  // Include a dollar sign in the ticks
-                                  callback: function(value, index, values) {
-                                      return '$' + value;
-                                  }
-                              }
-                          }]
-                      },
-
-                  }
-              }
-          });
 
       });
     </script>
