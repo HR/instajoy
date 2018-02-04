@@ -48,7 +48,7 @@
 
       <ul id="show"></ul>
 
-      <canvas id="myChart" width="400" height="200"></canvas>
+      <canvas id="myChart" width="400" height="240"></canvas>
 
 
       </div>
@@ -125,6 +125,7 @@
                                         label: "Ups and Downs in your Life",
                                         backgroundColor: '#4868AD',
                                         borderColor: '#0e1f56',
+                                        borderWidth:2,
                                         data: emotion,
                                     }]
                                 },
@@ -132,6 +133,14 @@
 
                                 // Configuration options go here
                                 options: {
+                                    layout: {
+                                        padding: {
+                                            left: 0,
+                                            right: 0,
+                                            top: 20,
+                                            bottom: 20
+                                        }
+                                    },
 
                                     title: {
                                         display: true,
