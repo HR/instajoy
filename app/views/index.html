@@ -50,6 +50,12 @@
 
       <canvas id="myChart" width="400" height="240"></canvas>
 
+      <div class="row">
+        <div class="col-md-12 text-center" id="thumbs">
+
+        </div>
+      </div>
+
 
       </div>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -108,8 +114,11 @@
                         var len = data.length;
                         var emotion = [];
                         var time = [];
+                        var thumbs = [];
+                        var thumbsEl = $('#thumbs');
                         for(var i=0;i<len;i++){
                             emotion[i] = emotions[data[i].emotion];
+                            thumbs[i] = data[i].thumb;
                             score = (emotion[i] === 7) ? score+happinessReward : score;
                             // time[i] = new Date(data[i].time * 1000);
                             // time[i] = moment(parseInt(data[i].time)).startOf('day').fromNow();
@@ -117,6 +126,9 @@
                             // time[i] = time[i].toLocaleString();
                         }
                         $this.attr("disabled", "true");
+                        thumbs.forEach(thumb => {
+                          thumbsEl.append("<img src='"+thumb+"' class='thumbs'>");
+                        });
                         var ctx = document.getElementById('myChart').getContext('2d');
                         var chart = new Chart(ctx, {
                             // The type of chart we want to create
