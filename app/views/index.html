@@ -87,7 +87,8 @@
 
                 var $this = $(this);
                 $this.button('loading');
-                setTimeout(function() {
+
+                try {
                     $.get("./data",function(data, status) {
                         data = data.sort(function (a, b) {
                             let at = parseInt(a.time);
@@ -199,9 +200,12 @@
                             sc.show();
                         }
 
-                    }, "json");
 
-                }, 2000);
+                    }, "json");
+                    }
+                catch (err){
+
+                }
 
 
             });
