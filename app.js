@@ -45,7 +45,8 @@ if (ENV === 'development') {
 
 app.locals = {
 	userAccessToken: process.env.TEST_ACCESS_TOKEN,
-  data: null
+  data: null,
+  fetching: false
 }
 
 /**
@@ -93,7 +94,7 @@ console.log('Server alive on http://localhost:' + PORT);
 
 app.get('/', function (req, res) {
 	if (app.locals.userAccessToken) {
-    if (!app.locals.data) {
+    if (!app.locals.data && !app.locals.fetching) {
       getImages()
     }
     console.log('app.locals.data:', app.locals.data);
@@ -134,17 +135,20 @@ app.get('/auth', function (req, res) {
 
 			app.locals.userAccessToken = parsedBody["access_token"];
 			console.log('Got user access token:', app.locals.userAccessToken);
+      // redirect
+      res.redirect('/');
 			// start processing user images
-			getImages()
+			getImages();
 		});
 	} else {
 		// error
+    res.redirect('/');
 	}
 
-	res.redirect('/');
 })
 
 function getImages() {
+  app.locals.fetching = true;
 	let count = 100000000000;
 	request.get(consts.endpoints.instagramMedia + app.locals.userAccessToken + '&count=' + count, function (err, httpResponse, body) {
 		if (err) {
@@ -161,6 +165,7 @@ function getImages() {
 			.then((res) => {
 				console.log('Got Data:', JSON.stringify(res));
         app.locals.data = res;
+        app.locals.fetching = false;
 			})
 	})
 }
