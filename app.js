@@ -45,16 +45,7 @@ if (ENV === 'development') {
 
 app.locals = {
 	userAccessToken: process.env.TEST_ACCESS_TOKEN,
-	accEmotions: {
-		anger: 0,
-		contempt: 0,
-		disgust: 0,
-		fear: 0,
-		happiness: 0,
-		neutral: 0,
-		sadness: 0,
-		surprise: 0
-	}
+  data: null
 }
 
 /**
@@ -102,13 +93,24 @@ console.log('Server alive on http://localhost:' + PORT);
 
 app.get('/', function (req, res) {
 	if (app.locals.userAccessToken) {
-		getImages()
-		res.render('index')
+    if (!app.locals.data) {
+      getImages()
+    }
+    console.log('app.locals.data:', app.locals.data);
+    res.status(200).render('index')
 	} else {
-		res.render('noauth.ejs', {
+		res.status(200).render('noauth.ejs', {
 			clientId: process.env.CLIENT_ID
 		})
 	}
+})
+
+app.get('/data', function (req, res) {
+  if (app.locals.data) {
+    res.status(200).json(app.locals.data);
+  } else {
+    res.status(404).json({error: 'data not yet fetched or processed'});
+  }
 })
 
 app.get('/auth', function (req, res) {
@@ -150,20 +152,39 @@ function getImages() {
 		}
 		let parsedBody = JSON.parse(body);
 		let data = parsedBody["data"];
-		let imageData = data.filter(img => img.type === "image")
-			.map(img => img["images"]["standard_resolution"]["url"]);
-		console.log(imageData);
-		getImagesSentiments(imageData);
+		let images = data.filter(img => img.type === "image");
+		let imageData = images.map(img => img["images"]["standard_resolution"]["url"]);
+		let timeData = images.map(img => img["created_time"]);
+		console.log('imageData:', imageData);
+		console.log('timeData:', timeData);
+		getData(imageData, timeData)
+			.then((res) => {
+				console.log('Got Data:', JSON.stringify(res));
+        app.locals.data = res;
+			})
 	})
 }
 
-async function getImagesSentiments(images) {
-  let res = [];
+async function getData(images, times) {
+	let res = [];
+	for (let i = 0; i < images.length; i++) {
+		let imageSentiments = await getImageSentiments(images[i]);
+		if (imageSentiments) {
+			res.push({
+				emotion: imageSentiments,
+				time: times[i]
+			});
+		}
+	}
+	return res;
+}
+
+async function getImageSentiments(image) {
 	try {
 		let imgSents = await axios({
 			method: 'post',
 			url: consts.endpoints.faceAPI,
-			data: '{"url": ' + '"' + images[2] + '"}',
+			data: '{"url": ' + '"' + image + '"}',
 			headers: {
 				'Content-Type': 'application/json',
 				'Ocp-Apim-Subscription-Key': process.env.SUB_KEY
@@ -177,30 +198,20 @@ async function getImagesSentiments(images) {
 
 		let faceData = imgSents.data
 		if (faceData.length <= 0) {
-			console.log("No faces detected")
-			return;
+			console.log("No faces detected for ", image)
+			return null;
 		}
 
-    console.log(JSON.stringify(faceData));
+		console.log(JSON.stringify(faceData));
 
-    let modeEmotions = faceData.map(face => Object.keys(face['faceAttributes']['emotion']).reduce((a, b) => face['faceAttributes']['emotion'][a] > face['faceAttributes']['emotion'][b] ? a : b));
-    let modeEmotion = mode(maxEmotions);
-
+		let modeEmotions = faceData.map(face => Object.keys(face['faceAttributes']['emotion'])
+			.reduce((a, b) => face['faceAttributes']['emotion'][a] > face['faceAttributes']['emotion'][b] ? a : b));
+		let modeEmotion = mode(modeEmotions);
+		return modeEmotion;
 	} catch (err) {
 		console.error(err);
+		return null;
 	}
-
-
-
-	// const imgps = images.map(async (imgUrl) => {
-	//   let imgBin = await req(imgUrl);
-	//   let imgB64 = new Buffer(imgBin).toString('base64');
-	//   console.log(imgB64.substring(0,50));
-	//   return imgB64;
-	// })
-
-	// let s = await imgps[0];
-	// request.get()
 }
 
 function mode(array) {
