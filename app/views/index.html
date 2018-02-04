@@ -181,6 +181,12 @@
                             else if(score < 100){
                                 sc.find('.scoreMessage').text('Good work! Keep it up. He who laughs, lasts! — Mary Pettibone Poole');
                             }
+                            else if(score < 150){
+                                sc.find('.scoreMessage').text('The last thing you need to do is laughing.');
+                            }
+                            else{
+                                sc.find('.scoreMessage').text('Wow! Can you teach me how to laugh everyday?');
+                            }
                             sc.show();
                         }
 
