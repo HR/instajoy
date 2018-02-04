@@ -16,10 +16,8 @@ class App extends Component {
 		super(props)
 		this.state = {
       emotionData: [],
-      message: 'Loading sentiments...'
 		}
 		this.handleEmotionData = this.handleEmotionData.bind(this)
-		this.handleAuth = this.handleAuth.bind(this)
 	}
 	handleEmotionData(data) {
 		// console.log(data)
