@@ -3,244 +3,202 @@
   <head>
     <meta charset="utf-8">
     <title>InstaJ😂y</title>
-
   </head>
-
-    <!-- The scrollable area -->
-    <body data-spy="scroll" data-target=".navbar" data-offset="50">
-      <!-- The navbar - The <a> elements are used to jump to a section in the scrollable area -->
-      <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#" style="text-align:center;font-size:50px;color:#000;">InstaJ😂y</a>
-            <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button> -->
-            <!-- <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/teacher">Teacher</a>
-                    </li>
-                    <li class="nav-item active">
-                        <a class="nav-link" href="/student">Student</a>
-                    </li>
-                </ul>
-            </div> -->
-
-        </nav>
+  <!-- The scrollable area -->
+  <body data-spy="scroll" data-target=".navbar" data-offset="50">
+    <!-- The navbar - The <a> elements are used to jump to a section in the scrollable area -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#" style="text-align:center;font-size:50px;color:#000;">InstaJ😂y</a>
+      <!-- <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"> <span class="navbar-toggler-icon"></span>
+      </button> -->
+      <!-- <div class="collapse navbar-collapse" id="navbarSupportedContent"> <ul class="navbar-nav mr-auto"> <li class="nav-item"> <a class="nav-link" href="/teacher">Teacher</a> </li> <li class="nav-item active"> <a class="nav-link"
+      href="/student">Student</a> </li> </ul> </div> -->
+    </nav>
     <div class="container" style="padding-top:70px;">
       <div class="row">
         <div class="col-md-8">
           <div id="entry"></div>
         </div>
       </div>
-        <div class="row">
-            <div class="col-md-12 text-center" style="display:none" id="score">
-                <h3>Your happiness score is</h3>
-                <h1 class="score"></h1>
-                <h6 class="scoreMessage"></h6>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12 text-center">
-                <button type="button" visibility="hidden" class="btn btn-primary btn-md " style="margin:auto;" data-loading-text="Drawing..." id="loadingBtn" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing Order">Show my life's roallercoster</button>
-            </div>
-
-        </div>
-
-      <ul id="show"></ul>
-
-      <canvas id="myChart" width="400" height="240"></canvas>
-
       <div class="row">
-        <div class="col-md-12 text-center" id="thumbs">
-
+        <div class="col-md-12 text-center" style="display:none" id="score">
+          <h3>Your happiness score is</h3>
+          <h1 class="score"></h1>
+          <h6 class="scoreMessage"></h6>
         </div>
       </div>
-
-
+      <div class="row">
+        <div class="col-md-12 text-center">
+          <button type="button" visibility="hidden" class="btn btn-primary btn-md " style="margin:auto;" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing Order" id="loadingBtn">Show my life's roallercoster</button>
+        </div>
       </div>
+      <ul id="show"></ul>
+      <canvas id="myChart" width="400" height="240"></canvas>
+      <div class="row">
+        <div class="col-md-12 text-center" id="thumbs"></div>
+      </div>
+    </div>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <script src="/assets/main.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
     <script src="http://libs.baidu.com/jquery/1.9.0/jquery.js" type="text/javascript"></script>
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
-	<link rel="stylesheet" href="/assets/main.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script>
+    <link rel="stylesheet" href="/assets/main.css">
     <script>
-        var happinessReward = 10;
-        var score = 0;
-        var emotions = {
-            "anger": 0,
-            "contempt": 3,
-            "disgust": 2,
-            "fear": 4,
-            "happiness": 7,
-            "neutral": 5,
-            "sadness": 1,
-            "surprise": 6
-        };
-        var emoji = {
-            0: "😡",
-            3: "🙄",
-            2: "🤢",
-            4: "😱",
-            7: "😂",
-            5: "😐",
-            1: "😔",
-            6: "😮"
-        };
-        $( document ).ready(function() {
-            $('#loadingBtn').on('click', function() {
-
-                var $this = $(this);
-                $this.button('loading');
-
-                var myvar = setInterval(httprequest, 2500);
-                function httprequest(){
-                    $.ajax({
-                        type: 'GET',
-                        dataType: 'json',
-                        url: '/data',
-                        timeout: 5000,
-                        success: function(data, textStatus ){
-                            clearInterval(myvar);
-                            data = data.sort(function (a, b) {
-                                let at = parseInt(a.time);
-                                let bt = parseInt(b.time);
-                                if (bt > at) {
-                                    return -1;
-                                } else if (bt === at) {
-                                    return 0;
-                                } else {
-                                    return 1;
-                                };
-                            });
-                            var len = data.length;
-                            var emotion = [];
-                            var time = [];
-                            var thumbs = [];
-                            var thumbsEl = $('#thumbs');
-                            for(var i=0;i<len;i++){
-                                emotion[i] = emotions[data[i].emotion];
-                                score = (emotion[i] === 7) ? score+happinessReward : score;
-                                // time[i] = new Date(data[i].time * 1000);
-                                // time[i] = moment(parseInt(data[i].time)).startOf('day').fromNow();
-                                time[i] = moment(new Date(data[i].time * 1000)).calendar();
-                                // time[i] = time[i].toLocaleString();
-                            }
-                            $this.attr("disabled", "true");
-                            thumbs.forEach(thumb => {
-                              thumbsEl.append("<img src='"+thumb+"' class='thumbs'>");
-                            });
-                            var ctx = document.getElementById('myChart').getContext('2d');
-                            var chart = new Chart(ctx, {
-                                // The type of chart we want to create
-                                type: 'line',
-
-                                // The data for our dataset
-                                data: {
-                                    labels: time,
-                                    datasets: [{
-                                        label: "Ups and Downs in your Life",
-                                        backgroundColor: '#4868AD',
-                                        borderColor: '#0e1f56',
-                                        borderWidth:2,
-                                        data: emotion,
-                                    }]
-                                },
-
-
-                                // Configuration options go here
-                                options: {
-                                    layout: {
-                                        padding: {
-                                            left: 0,
-                                            right: 0,
-                                            top: 20,
-                                            bottom: 20
-                                        }
-                                    },
-
-                                    title: {
-                                        display: true,
-                                        text: 'Your life\'s roallercoster'
-                                    },
-                                    scales: {
-                                        xAxes: [{
-                                            gridLines: {
-                                                display: false,
-                                                color: "black"
-                                            },
-                                            scaleLabel: {
-                                                display: true,
-                                                labelString: "Timeline"
-                                            }
-                                        }],
-                                        yAxes: [{
-                                            ticks: {
-                                                fontSize: 25,
-                                                // Include a dollar sign in the ticks
-                                                callback: function(value, index, values) {
-                                                    return emoji[value];
-                                                }
-                                            },
-                                            gridLines: {
-                                                display: false,
-                                                color: "black"
-                                            },
-                                            scaleLabel: {
-                                                display: true,
-                                                labelString: "Emotions"
-                                            }
-                                        }]
-                                    }
-                                }
-                            });
-
-                            document.getElementById("loadingBtn").style.visibility = 'hidden';
-                            var sc = $("#score");
-                            sc.find('.score').text(score);
-                            if(score < 20) {
-                                sc.find('.scoreMessage').text('We are all sad about Harambe\'s death but life goes on so laugh more. Remember, a laugh a day keeps the doctor away!');
-                            }
-                            else if(score < 40){
-                                sc.find('.scoreMessage').text('You can do better. Laugh a bit more. Even the gods love to laugh — Plato');
-                            }
-                            else if(score < 100){
-                                sc.find('.scoreMessage').text('Good work! Keep it up. He who laughs, lasts! — Mary Pettibone Poole');
-                            }
-                            else if(score < 150){
-                                sc.find('.scoreMessage').text('The last thing you need to do is laughing.');
-                            }
-                            else{
-                                sc.find('.scoreMessage').text('Wow! Can you teach me how to laugh everyday?');
-                            }
-                            sc.show();
-                        },
-
-                        error: function(xhr, textStatus, errorThrown){
-                            console.log(xhr.status);
-                        }
-
-
-                    });
-
-                };
-
-
-            });
-
+      var happinessReward = 10;
+      var score = 0;
+      var emotions = {
+        "anger": 0,
+        "contempt": 3,
+        "disgust": 2,
+        "fear": 4,
+        "happiness": 7,
+        "neutral": 5,
+        "sadness": 1,
+        "surprise": 6
+      };
+      var emoji = {
+        0: "😡",
+        3: "🙄",
+        2: "🤢",
+        4: "😱",
+        7: "😂",
+        5: "😐",
+        1: "😔",
+        6: "😮"
+      };
+      $(document).ready(function () {
+        $('#loadingBtn').on('click', function () {
+          var $this = $(this);
+          $this.button('loading');
+          var myvar = setInterval(httprequest, 2500);
+          function httprequest() {
+            $.ajax({
+              type: 'GET',
+              dataType: 'json',
+              url: '/data',
+              timeout: 5000,
+              success: function (data, textStatus) {
+                clearInterval(myvar);
+                data = data.sort(function (a, b) {
+                  let at = parseInt(a.time);
+                  let bt = parseInt(b.time);
+                  if (bt > at) {
+                    return -1;
+                  } else if (bt === at) {
+                    return 0;
+                  } else {
+                    return 1;
+                  };
+                });
+                var len = data.length;
+                var emotion = [];
+                var time = [];
+                var thumbs = [];
+                var thumbsEl = $('#thumbs');
+                for (var i = 0; i < len; i++) {
+                  emotion[i] = emotions[data[i].emotion];
+                  score = (emotion[i] === 7)
+                    ? score + happinessReward
+                    : score;
+                  thumbs[i] = data[i].thumb;
+                  time[i] = moment(new Date(data[i].time * 1000)).calendar();
                 }
-
-        );
-
-
+                $this.attr("disabled", "true");
+                thumbs.forEach(thumb => {
+                  thumbsEl.append("<img src='" + thumb + "' class='thumbs'>");
+                });
+                var ctx = document.getElementById('myChart').getContext('2d');
+                var chart = new Chart(ctx, {
+                  // The type of chart we want to create
+                  type: 'line',
+                  // The data for our dataset
+                  data: {
+                    labels: time,
+                    datasets: [
+                      {
+                        label: "Ups and Downs in your Life",
+                        backgroundColor: '#4868AD',
+                        borderColor: '#0e1f56',
+                        borderWidth: 2,
+                        data: emotion
+                      }
+                    ]
+                  },
+                  // Configuration options go here
+                  options: {
+                    layout: {
+                      padding: {
+                        left: 0,
+                        right: 0,
+                        top: 20,
+                        bottom: 20
+                      }
+                    },
+                    title: {
+                      display: true,
+                      text: 'Your life\'s roallercoster'
+                    },
+                    scales: {
+                      xAxes: [
+                        {
+                          gridLines: {
+                            display: false,
+                            color: "black"
+                          },
+                          scaleLabel: {
+                            display: true,
+                            labelString: "Timeline"
+                          }
+                        }
+                      ],
+                      yAxes: [
+                        {
+                          ticks: {
+                            fontSize: 25,
+                            // Include a dollar sign in the ticks
+                            callback: function (value, index, values) {
+                              return emoji[value];
+                            }
+                          },
+                          gridLines: {
+                            display: false,
+                            color: "black"
+                          },
+                          scaleLabel: {
+                            display: true,
+                            labelString: "Emotions"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                });
+                document.getElementById("loadingBtn").style.visibility = 'hidden';
+                var sc = $("#score");
+                sc.find('.score').text(score);
+                if (score < 20) {
+                  sc.find('.scoreMessage').text('We are all sad about Harambe\'s death but life goes on so laugh more. Remember, a laugh a day keeps the doctor away!');
+                } else if (score < 40) {
+                  sc.find('.scoreMessage').text('You can do better. Laugh a bit more. Even the gods love to laugh — Plato');
+                } else if (score < 100) {
+                  sc.find('.scoreMessage').text('Good work! Keep it up. He who laughs, lasts! — Mary Pettibone Poole');
+                } else if (score < 150) {
+                  sc.find('.scoreMessage').text('The last thing you need to do is laughing.');
+                } else {
+                  sc.find('.scoreMessage').text('Wow! Can you teach me how to laugh everyday?');
+                }
+                sc.show();
+              },
+              error: function (xhr, textStatus, errorThrown) {
+                console.log(xhr.status);
+              }
+            });
+          };
+        });
+      });
     </script>
-
-    <script>
-
-
-    </script>
-
-
+    <script></script>
   </body>
 </html>
