@@ -3,7 +3,6 @@ const express = require('express'),
 	logger = require('morgan'),
 	errorHandler = require('errorhandler'),
 	debug = require('debug')('server'),
-	socketio = require('socket.io'),
 	http = require('http'),
 	cookieParser = require('cookie-parser'),
 	bodyParser = require('body-parser'),
@@ -12,7 +11,6 @@ const express = require('express'),
 	axios = require('axios'),
 	req = require('request-promise-native'),
 	request = require('request'),
-	FormData = require('form-data'),
 	BASE_PATH = `${__dirname}/app`,
 	ENV = process.env.NODE_ENV || 'development',
 	DEFAULT_PORT = 3001;
@@ -45,8 +43,8 @@ if (ENV === 'development') {
 
 app.locals = {
 	userAccessToken: process.env.TEST_ACCESS_TOKEN,
-  data: null,
-  fetching: false
+	data: null,
+	fetching: false
 }
 
 /**
@@ -80,46 +78,40 @@ server.on('listening', (err) => {
 	debug('InstaJoy is alive on ' + bind)
 })
 
-console.log('Server alive on http://localhost:' + PORT);
-
-// axios.interceptors.request.use(request => {
-//   console.log('Starting Request', request)
-//   return request
-// })
-//
-// axios.interceptors.response.use(response => {
-//   console.log('Response:', response)
-//   return response
-// })
+console.log('InstaJoy alive on http://localhost:' + PORT);
 
 app.get('/', function (req, res) {
 	if (app.locals.userAccessToken) {
-    if (!app.locals.data && !app.locals.fetching) {
-      getImages()
-    }
-    console.log('app.locals.data:', app.locals.data);
-    res.status(200).render('index')
+		if (!app.locals.data && !app.locals.fetching) {
+			getImages()
+		}
+		console.log('app.locals.data:', app.locals.data);
+		res.status(200)
+			.render('index')
 	} else {
-		res.status(200).render('noauth.ejs', {
-			clientId: process.env.CLIENT_ID
-		})
+		res.status(200)
+			.render('noauth.ejs', {
+				clientId: process.env.IG_CLIENT_ID
+			})
 	}
 })
 
 app.get('/data', function (req, res) {
-  if (app.locals.data) {
-    res.status(200).json(app.locals.data);
-  } else {
-    res.status(404).json({error: 'data not yet fetched or processed'});
-  }
+	if (app.locals.data) {
+		res.status(200)
+			.json(app.locals.data);
+	} else {
+		res.status(404)
+			.json({ error: 'data not yet fetched or processed' });
+	}
 })
 
 app.get('/auth', function (req, res) {
 	if (req.query.code) {
 		console.log("Authorization code is: " + req.query.code);
 		var formData = {
-			'client_id': process.env.CLIENT_ID,
-			'client_secret': process.env.CLIENT_SECRET,
+			'client_id': process.env.IG_CLIENT_ID,
+			'client_secret': process.env.IG_CLIENT_SECRET,
 			'grant_type': 'authorization_code',
 			'redirect_uri': 'http://localhost:3001/auth',
 			'code': req.query.code
@@ -135,20 +127,20 @@ app.get('/auth', function (req, res) {
 
 			app.locals.userAccessToken = parsedBody["access_token"];
 			console.log('Got user access token:', app.locals.userAccessToken);
-      // redirect
-      res.redirect('/');
+			// redirect
+			res.redirect('/');
 			// start processing user images
 			getImages();
 		});
 	} else {
 		// error
-    res.redirect('/');
+		res.redirect('/');
 	}
 
 })
 
 function getImages() {
-  app.locals.fetching = true;
+	app.locals.fetching = true;
 	let count = 100000000000;
 	request.get(consts.endpoints.instagramMedia + app.locals.userAccessToken + '&count=' + count, function (err, httpResponse, body) {
 		if (err) {
@@ -160,26 +152,26 @@ function getImages() {
 		getData(images)
 			.then((res) => {
 				console.log('Got Data:', JSON.stringify(res));
-        app.locals.data = res;
-        app.locals.fetching = false;
+				app.locals.data = res;
+				app.locals.fetching = false;
 			})
 	})
 }
 
 async function getData(imgs) {
-  let images = imgs.map(img => img["images"]["standard_resolution"]["url"]);
-  let thumbs = imgs.map(img => img["images"]["thumbnail"]["url"]);
-  let times = imgs.map(img => img["created_time"]);
+	let images = imgs.map(img => img["images"]["standard_resolution"]["url"]);
+	let thumbs = imgs.map(img => img["images"]["thumbnail"]["url"]);
+	let times = imgs.map(img => img["created_time"]);
 	let res = [];
-  console.log('images:', images);
-  console.log('times:', times);
+	console.log('images:', images);
+	console.log('times:', times);
 	for (let i = 0; i < images.length; i++) {
 		let imageSentiments = await getImageSentiments(images[i]);
 		if (imageSentiments) {
 			res.push({
 				emotion: imageSentiments,
 				time: times[i],
-        thumb: thumbs[i]
+				thumb: thumbs[i]
 			});
 		}
 	}
@@ -194,7 +186,7 @@ async function getImageSentiments(image) {
 			data: '{"url": ' + '"' + image + '"}',
 			headers: {
 				'Content-Type': 'application/json',
-				'Ocp-Apim-Subscription-Key': process.env.SUB_KEY
+				'Ocp-Apim-Subscription-Key': process.env.MS_FACE_API_KEY
 			},
 			params: {
 				'returnFaceId': 'true',

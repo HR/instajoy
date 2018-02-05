@@ -8,6 +8,9 @@ body {
 
 .navbar-brand {
   margin: auto !important;
+  text-align: center;
+  font-size: 50px;
+  color: #000;
 }
 
 .score {

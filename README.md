@@ -1,10 +1,25 @@
-# InstaJoy ⚡️
+# InstaJ😂y
+
+A NodeJS app made in less than 24hrs at the Facebook Hackathon 2018.
+
+It visualises the ups and downs of your life by doing sentimental analysis of your instagram posts.
+Gives you a happiness score that is based on how happy you have been with the aim of encouraging you to laugh 😂 more.
+
+![InstaJoy screenshot](github/screenshot)
 
 # Development
 
-Structure:
-- `master` - production staging branch (with tagged releases)
-- `dev` - main development branch
-- `{YOUR_NAME}/{ISSUE}-{FEATURE_NAME}` - feature branch
-
-You should work on your feature branch until you have implemented it at which point you land it onto `dev` via a merge or, preferably, a rebase. Once `dev` is release-ready it is landed onto `master`.
+## Pre-requirements
+Need the following environmental defined to run this. These can be defined in a `.env.json` file like so
+```js
+{
+  "MS_FACE_API_KEY": [microsoft cognitive services face API key],
+  "IG_CLIENT_ID": [instagram client id],
+  "IG_CLIENT_SECRET": [instagram client secret]
+}
+```
+## Run
+After installing all the dependencies (`npm i`) just run
+```sh
+npm run dev
+```

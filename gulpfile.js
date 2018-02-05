@@ -1,10 +1,6 @@
 const  gulp = require('gulp'),
   nodemon = require('gulp-nodemon'),
   env = require('gulp-env'),
-  browserify = require('browserify'),
-  babelify = require('babelify'),
-  source = require('vinyl-source-stream'),
-  buffer = require('vinyl-buffer'),
   JSX_FILES = ['app/src/client/**/*.js']
 
 function runCommand (command) {
@@ -21,25 +17,7 @@ function runCommand (command) {
  * GULP tasks
  */
 
- gulp.task('default', ['jsxbuild', 'nodemon'], ()=>{
-   gulp.watch(JSX_FILES, ['jsxbuild'])
- });
-
-  gulp.task('jsxbuild', () => {
-  return browserify({
-    entries: ['./app/src/client/main.js'],
-    debug: true
-  })
-  .transform(babelify, {
-    presets: ["es2015", "react"],
-    plugins: []
-  })
-  .bundle()
-  .on('error', swallowError)
-  .pipe(source('main.js'))
-  .pipe(buffer())
-  .pipe(gulp.dest('./app/public'));
-})
+ gulp.task('default', ['nodemon']);
 
 /* Development */
 gulp.task('nodemon', function (cb) {
@@ -65,8 +43,3 @@ gulp.task('nodemon', function (cb) {
 
     })
 })
-
-function swallowError (error) {
-	console.log(error.toString());
-	this.emit('end');
-}
