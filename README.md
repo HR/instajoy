@@ -5,7 +5,7 @@ A NodeJS app made in less than 24hrs at the Facebook Hackathon 2018.
 It visualises the ups and downs of your life by doing sentimental analysis of your instagram posts.
 Gives you a happiness score that is based on how happy you have been with the aim of encouraging you to laugh 😂 more.
 
-![InstaJoy screenshot](github/screenshot)
+![InstaJoy screenshot](github/screenshot.png)
 
 # Development
 
